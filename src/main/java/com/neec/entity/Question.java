@@ -3,6 +3,8 @@ package com.neec.entity;
 import java.time.Instant;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.neec.enums.DifficultyLevel;
@@ -29,6 +31,8 @@ import lombok.experimental.FieldDefaults;
 @Builder @NoArgsConstructor @AllArgsConstructor @FieldDefaults(level = AccessLevel.PRIVATE) @Getter @Setter
 @Entity
 @Table(name = "QUESTIONS")
+@SQLDelete(sql = "update QUESTIONS set IS_ACTIVE = false where QUESTION_ID = ?") // runs when calling the delete() method on a repository.
+@SQLRestriction(value = "IS_ACTIVE = true")	// WHERE clause, added in SELECT, UPDATE, and DELETE statements
 public class Question {
 	@Column(name = "QUESTION_ID", insertable = false, updatable = false, nullable = false, unique = true)
 	@Id
@@ -56,4 +60,7 @@ public class Question {
 	@Column(name = "UPDATED_AT", insertable = true, updatable = true, nullable = false, unique = false)
 	@UpdateTimestamp
 	Instant updatedAt;
+
+	@Column(name = "IS_ACTIVE", insertable = false, updatable = true, nullable = false, unique = false)
+	boolean isActive;
 }
