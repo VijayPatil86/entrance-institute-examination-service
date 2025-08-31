@@ -50,7 +50,7 @@ public class Question {
 	DifficultyLevel questionDifficultyLevel;
 
 	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "CORRECT_OPTION_ID", referencedColumnName = "OPTION_ID", insertable = true, updatable = true, nullable = false, unique = false)
+	@JoinColumn(name = "CORRECT_OPTION_ID", referencedColumnName = "OPTION_ID", insertable = true, updatable = true, nullable = true, unique = false)
 	QuestionOption correctOption;
 
 	@Column(name = "CREATED_AT", insertable = true, updatable = false, nullable = false, unique = false)
