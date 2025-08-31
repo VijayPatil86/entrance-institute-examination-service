@@ -6,6 +6,8 @@ import com.neec.annotation.DuplicateOptionLabel;
 import com.neec.annotation.OptionLabelMatch;
 import com.neec.enums.DifficultyLevel;
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -29,6 +31,7 @@ public class QuestionRequestDTO {
 	String subject;
 
 	@NotNull(message = "Question Difficulty Level can not be blank")
+	@Enumerated(EnumType.STRING)
 	DifficultyLevel difficultyLevel;
 
 	@NotBlank(message = "Correct Option Label can not be blank")
