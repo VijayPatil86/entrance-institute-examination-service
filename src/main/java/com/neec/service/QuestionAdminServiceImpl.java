@@ -3,6 +3,8 @@ package com.neec.service;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -85,6 +87,56 @@ public class QuestionAdminServiceImpl implements QuestionAdminService {
 				.updatedAt(question.getUpdatedAt())
 				.build();
 		return questionResponseDTO;
+	}
+
+	public List<QuestionResponseDTO> getAllQuestions(Pageable pageable) {
+		Page<Question> pageQuestion = questionRepository.findAll(pageable);
+		List<QuestionResponseDTO> page = pageQuestion.map(question ->
+			QuestionResponseDTO.builder()
+				.questionId(question.getQuestionId())
+				.subject(question.getSubject())
+				.difficultyLevel(question.getQuestionDifficultyLevel())
+				.questionText(question.getQuestionText())
+				.correctOptionLabel(question.getCorrectOption().getOptionLabel())
+				.createdAt(question.getCreatedAt())
+				.updatedAt(question.getUpdatedAt())
+				.options(
+						questionOptionRepository.findByQuestion_QuestionId(question.getQuestionId()).stream()
+							.map(option ->
+								QuestionOptionsResponseDTO.builder()
+									.optionId(option.getOptionId())
+									.optionLabel(option.getOptionLabel())
+									.optionText(option.getOptionText())
+									.build())
+							.toList())
+				.build()
+		).toList();
+		return page;
+	}
+
+	public List<QuestionResponseDTO> findBySubject(String subject, Pageable pageable) {
+		Page<Question> pageQuestion = questionRepository.findBySubject(subject, pageable);
+		List<QuestionResponseDTO> page = pageQuestion.map(question ->
+			QuestionResponseDTO.builder()
+				.questionId(question.getQuestionId())
+				.subject(question.getSubject())
+				.difficultyLevel(question.getQuestionDifficultyLevel())
+				.questionText(question.getQuestionText())
+				.correctOptionLabel(question.getCorrectOption().getOptionLabel())
+				.createdAt(question.getCreatedAt())
+				.updatedAt(question.getUpdatedAt())
+				.options(
+						questionOptionRepository.findByQuestion_QuestionId(question.getQuestionId()).stream()
+							.map(option ->
+								QuestionOptionsResponseDTO.builder()
+									.optionId(option.getOptionId())
+									.optionLabel(option.getOptionLabel())
+									.optionText(option.getOptionText())
+									.build())
+							.toList())
+				.build()
+		).toList();
+		return page;
 	}
 
 	private List<QuestionOption> buildAndReturnQuestionsOptionsList(QuestionRequestDTO questionDTO, Question question) {

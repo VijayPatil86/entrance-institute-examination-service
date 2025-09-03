@@ -1,5 +1,9 @@
 package com.neec.service;
 
+import java.util.List;
+
+import org.springframework.data.domain.Pageable;
+
 import com.neec.dto.QuestionRequestDTO;
 import com.neec.dto.QuestionResponseDTO;
 
@@ -21,9 +25,16 @@ public interface QuestionAdminService {
     /**
      * Retrieves a paginated list of all questions in the question bank.
      * @param pageable An object containing pagination information (page number, size).
-     * @return A Page of DTOs representing the questions for the requested page.
+     * @return A List of DTOs representing the questions for the requested page.
      */
-    //Page<QuestionResponseDTO> getAllQuestions(Pageable pageable);
+    List<QuestionResponseDTO> getAllQuestions(Pageable pageable);
+
+    /**
+     * Retrieves a paginated list of all questions in the question bank for given subject.
+     * @param pageable An object containing pagination information (page number, size).
+     * @return A List of DTOs representing the questions for the requested page.
+     */
+    List<QuestionResponseDTO> findBySubject(String subject, Pageable pageable);
 
     /**
      * Updates an existing question and its options.
