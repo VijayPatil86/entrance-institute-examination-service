@@ -16,7 +16,7 @@ public interface QuestionAdminService {
      * @param questionId The ID of the question to retrieve.
      * @return A DTO representing the question.
      */
-    //QuestionResponseDTO getQuestionById(Long questionId);
+    QuestionResponseDTO getQuestionById(Long questionId);
 
     /**
      * Retrieves a paginated list of all questions in the question bank.
