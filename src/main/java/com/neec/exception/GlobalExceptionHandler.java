@@ -2,6 +2,7 @@ package com.neec.exception;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,20 @@ public class GlobalExceptionHandler {
 			errors.put(error.getObjectName(), error.getDefaultMessage())
 		);
 		return ResponseEntity.badRequest().body(errors);
+	}
+
+	@ExceptionHandler(exception = {NoSuchElementException.class})
+	public ResponseEntity<ObjectNode> handleNoSuchElementException(NoSuchElementException ex){
+		ObjectNode errorMessage = objectMapper.createObjectNode();
+		errorMessage.put("error", ex.getMessage());
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+	}
+
+	@ExceptionHandler(exception = {IllegalStateException.class})
+	public ResponseEntity<ObjectNode> handleIllegalStateException(IllegalStateException ex){
+		ObjectNode errorMessage = objectMapper.createObjectNode();
+		errorMessage.put("error", ex.getMessage());
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMessage);
 	}
 
 	@ExceptionHandler(exception = {Exception.class})
