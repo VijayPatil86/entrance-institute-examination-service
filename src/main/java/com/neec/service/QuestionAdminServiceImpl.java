@@ -1,6 +1,7 @@
 package com.neec.service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +53,36 @@ public class QuestionAdminServiceImpl implements QuestionAdminService {
 				.options(buildAndReturnQuestionResponseDTO(savedQuestion, savedOptions))
 				.createdAt(savedQuestion.getCreatedAt())
 				.updatedAt(savedQuestion.getUpdatedAt())
+				.build();
+		return questionResponseDTO;
+	}
+
+	@Transactional(readOnly = true)
+	public QuestionResponseDTO getQuestionById(Long questionId) {
+		Question question = questionRepository.findByQuestionIdWithOptions(questionId)
+				.orElseThrow(() -> new NoSuchElementException("Question with id " + questionId + " not found"));
+		List<QuestionOption> listQuestionOptions =
+				questionOptionRepository.findByQuestion_QuestionId(questionId);
+		if(listQuestionOptions.isEmpty()) {
+			throw new IllegalStateException("Question with id " + questionId + " has no associated options");
+		}
+		List<QuestionOptionsResponseDTO> listQuestionOptionsResponseDTOs =
+				listQuestionOptions.stream()
+					.map(option ->
+						QuestionOptionsResponseDTO.builder().optionId(option.getOptionId())
+							.optionLabel(option.getOptionLabel())
+							.optionText(option.getOptionText())
+							.build())
+					.toList();
+		QuestionResponseDTO questionResponseDTO = QuestionResponseDTO.builder()
+				.questionId(question.getQuestionId())
+				.subject(question.getSubject())
+				.questionText(question.getQuestionText())
+				.difficultyLevel(question.getQuestionDifficultyLevel())
+				.correctOptionLabel(question.getCorrectOption().getOptionLabel())
+				.options(listQuestionOptionsResponseDTOs)
+				.createdAt(question.getCreatedAt())
+				.updatedAt(question.getUpdatedAt())
 				.build();
 		return questionResponseDTO;
 	}
