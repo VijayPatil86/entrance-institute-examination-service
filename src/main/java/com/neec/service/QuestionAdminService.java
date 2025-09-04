@@ -1,7 +1,6 @@
 package com.neec.service;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.neec.dto.QuestionRequestDTO;
@@ -27,14 +26,14 @@ public interface QuestionAdminService {
      * @param pageable An object containing pagination information (page number, size).
      * @return A List of DTOs representing the questions for the requested page.
      */
-    List<QuestionResponseDTO> getAllQuestions(Pageable pageable);
+    Page<QuestionResponseDTO> getAllQuestions(Pageable pageable);
 
     /**
      * Retrieves a paginated list of all questions in the question bank for given subject.
      * @param pageable An object containing pagination information (page number, size).
      * @return A List of DTOs representing the questions for the requested page.
      */
-    List<QuestionResponseDTO> findBySubject(String subject, Pageable pageable);
+    Page<QuestionResponseDTO> getQuestionsBySubject(String subject, Pageable pageable);
 
     /**
      * Updates an existing question and its options.
@@ -48,11 +47,20 @@ public interface QuestionAdminService {
      * Deletes a question from the question bank.
      * @param questionId The ID of the question to delete.
      */
-    //void deleteQuestion(Long questionId);
+    void deleteQuestion(Long questionId);
+
+    /**
+     * Deletes a question from the question bank for the given subject
+     * @param subject The subject of the question to delete.
+     * @return number of rows deleted
+     */
+    void deleteQuestionsBySubject(String subject);
 
 	/**
      * Restores a question from the question bank.
      * @param questionId The ID of the question to restore.
      */
-    //void restoreQuestion(Long questionId);
+    QuestionResponseDTO restoreQuestion(Long questionId);
+
+    Page<QuestionResponseDTO> restoreQuestionsBySubject(String subject, Pageable pageable);
 }
