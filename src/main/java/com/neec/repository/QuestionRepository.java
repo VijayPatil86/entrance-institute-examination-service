@@ -21,3 +21,6 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 	@EntityGraph(attributePaths = {"correctOption"})
 	Page<Question> findBySubject(String subject, Pageable pageable);
 }
+/*
+ * @EntityGraph: resolves N+1 problem
+ */
