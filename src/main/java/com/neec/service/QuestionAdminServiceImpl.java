@@ -58,7 +58,7 @@ public class QuestionAdminServiceImpl implements QuestionAdminService {
 				.difficultyLevel(savedQuestion.getQuestionDifficultyLevel())
 				.questionText(savedQuestion.getQuestionText())
 				.correctOptionLabel(correctOption.getOptionLabel())
-				.options(buildAndReturnQuestionResponseDTO(savedQuestion, savedOptions))
+				.options(buildAndReturnQuestionResponseDTO(savedOptions))
 				.createdAt(savedQuestion.getCreatedAt())
 				.updatedAt(savedQuestion.getUpdatedAt())
 				.build();
@@ -96,13 +96,16 @@ public class QuestionAdminServiceImpl implements QuestionAdminService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<QuestionResponseDTO> getAllQuestions(Pageable pageable) {
+	public Page<QuestionResponseDTO> getAllQuestions(Pageable pageable) {
 		Page<Question> pageQuestion = questionRepository.findAll(pageable);
 		List<Question> questionsOnPage = pageQuestion.getContent();
+		if(questionsOnPage.isEmpty()) {
+			return Page.empty();
+		}
 		List<QuestionOption> allOptionsOnPage = questionOptionRepository.findByQuestionIn(questionsOnPage);
 		Map<Long, List<QuestionOption>> mapQuestionOptions = allOptionsOnPage.stream()
 				.collect(Collectors.groupingBy(option -> option.getQuestion().getQuestionId()));
-		List<QuestionResponseDTO> page = pageQuestion.map(question ->
+		Page<QuestionResponseDTO> page = pageQuestion.map(question ->
 			QuestionResponseDTO.builder()
 				.questionId(question.getQuestionId())
 				.subject(question.getSubject())
@@ -119,19 +122,21 @@ public class QuestionAdminServiceImpl implements QuestionAdminService {
 								.optionText(questionOption.getOptionText())
 								.build())
 						.toList())
-				.build())
-		.toList();
+				.build());
 		return page;
 	}
 
 	@Transactional(readOnly = true)
-	public List<QuestionResponseDTO> findBySubject(String subject, Pageable pageable) {
-		Page<Question> pageQuestion = questionRepository.findBySubject(subject, pageable);
+	public Page<QuestionResponseDTO> getQuestionsBySubject(String subject, Pageable pageable) {
+		Page<Question> pageQuestion = questionRepository.findAllBySubject(subject, pageable);
 		List<Question> questionsOnPage = pageQuestion.getContent();
+		if(questionsOnPage.isEmpty()) {
+			return Page.empty();
+		}
 		List<QuestionOption> allOptionsOnPage = questionOptionRepository.findByQuestionIn(questionsOnPage);
 		Map<Long, List<QuestionOption>> mapQuestionOptions = allOptionsOnPage.stream()
 				.collect(Collectors.groupingBy(option -> option.getQuestion().getQuestionId()));
-		List<QuestionResponseDTO> page = pageQuestion.map(question ->
+		Page<QuestionResponseDTO> page = pageQuestion.map(question ->
 			QuestionResponseDTO.builder()
 				.questionId(question.getQuestionId())
 				.subject(question.getSubject())
@@ -148,8 +153,7 @@ public class QuestionAdminServiceImpl implements QuestionAdminService {
 								.optionText(questionOption.getOptionText())
 								.build())
 						.toList())
-				.build())
-		.toList();
+				.build());
 		return page;
 	}
 
@@ -204,12 +208,46 @@ public class QuestionAdminServiceImpl implements QuestionAdminService {
 				.difficultyLevel(question.getQuestionDifficultyLevel())
 				.questionText(question.getQuestionText())
 				.correctOptionLabel(correctOption.getOptionLabel())
-				.options(buildAndReturnQuestionResponseDTO(question,
+				.options(buildAndReturnQuestionResponseDTO(
 						savedOptions.stream().sorted(Comparator.comparing(QuestionOption::getOptionLabel)).toList()))
 				.createdAt(question.getCreatedAt())
 				.updatedAt(question.getUpdatedAt())
 				.build();
 		return questionResponseDTO;
+	}
+
+	@Transactional
+	public void deleteQuestion(Long questionId) {
+		int deletedRowsCount = questionRepository.deactivateById(questionId);
+		if(deletedRowsCount == 0) {
+			throw new NoSuchElementException("Question with id " + questionId + " not found");
+		}
+	}
+
+	@Transactional
+	public void deleteQuestionsBySubject(String subject) {
+		int deletedRowsCount = questionRepository.deactivateBySubject(subject);
+		if(deletedRowsCount == 0) {
+			throw new NoSuchElementException("Question with subject " + subject + " not found");
+		}
+	}
+
+	@Transactional
+	public QuestionResponseDTO restoreQuestion(Long questionId) {
+		int updated = questionRepository.restoreQuestionById(questionId);
+		if(updated == 0) {
+			throw new NoSuchElementException("Question with id " + questionId + " not found or already active");
+		}
+		return getQuestionById(questionId);
+	}
+
+	@Transactional
+	public Page<QuestionResponseDTO> restoreQuestionsBySubject(String subject, Pageable pageable) {
+		int updated = questionRepository.restoreQuestionsBySubject(subject);
+		if(updated == 0) {
+			throw new NoSuchElementException("Question with subject " + subject + " not found or already active");
+		}
+		return getQuestionsBySubject(subject, pageable);
 	}
 
 	private List<QuestionOption> buildAndReturnQuestionsOptionsList(QuestionRequestDTO questionDTO, Question question) {
@@ -224,8 +262,7 @@ public class QuestionAdminServiceImpl implements QuestionAdminService {
 			.toList();
 	}
 
-	private List<QuestionOptionsResponseDTO> buildAndReturnQuestionResponseDTO(Question updatedQuestion,
-			List<QuestionOption> savedOptions) {
+	private List<QuestionOptionsResponseDTO> buildAndReturnQuestionResponseDTO(List<QuestionOption> savedOptions) {
 		return savedOptions.stream()
 				.map(savedQuestionOption ->
 					QuestionOptionsResponseDTO.builder()
