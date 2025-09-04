@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -71,5 +72,11 @@ public class QuestionManagementController {
 		@RequestParam(name = "subject") String subject,
 		@PageableDefault(page = 0, size = 5, direction = Sort.Direction.DESC, sort = "updatedAt") Pageable pageable ) {
 		return ResponseEntity.ok(questionAdminService.findBySubject(subject, pageable));
+	}
+
+	@PutMapping("/{questionId}")
+	public ResponseEntity<QuestionResponseDTO> updateQuestion(@PathVariable(name = "questionId") Long questionId,
+			@Valid @RequestBody QuestionRequestDTO questionRequestDTO){
+		return ResponseEntity.ok(questionAdminService.updateQuestion(questionId, questionRequestDTO));
 	}
 }

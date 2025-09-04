@@ -42,7 +42,7 @@ public interface QuestionAdminService {
      * @param questionDTO The DTO containing the updated data.
      * @return A DTO representing the updated question.
      */
-    //QuestionResponseDTO updateQuestion(Long questionId, QuestionRequestDTO questionDTO);
+    QuestionResponseDTO updateQuestion(Long questionId, QuestionRequestDTO questionDTO);
 
     /**
      * Deletes a question from the question bank.
