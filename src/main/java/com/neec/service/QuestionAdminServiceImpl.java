@@ -1,7 +1,9 @@
 package com.neec.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -91,6 +93,10 @@ public class QuestionAdminServiceImpl implements QuestionAdminService {
 
 	public List<QuestionResponseDTO> getAllQuestions(Pageable pageable) {
 		Page<Question> pageQuestion = questionRepository.findAll(pageable);
+		List<Question> questionsOnPage = pageQuestion.getContent();
+		List<QuestionOption> allOptionsOnPage = questionOptionRepository.findByQuestionIn(questionsOnPage);
+		Map<Long, List<QuestionOption>> mapQuestionOptions = allOptionsOnPage.stream()
+				.collect(Collectors.groupingBy(option -> option.getQuestion().getQuestionId()));
 		List<QuestionResponseDTO> page = pageQuestion.map(question ->
 			QuestionResponseDTO.builder()
 				.questionId(question.getQuestionId())
@@ -100,22 +106,25 @@ public class QuestionAdminServiceImpl implements QuestionAdminService {
 				.correctOptionLabel(question.getCorrectOption().getOptionLabel())
 				.createdAt(question.getCreatedAt())
 				.updatedAt(question.getUpdatedAt())
-				.options(
-						questionOptionRepository.findByQuestion_QuestionId(question.getQuestionId()).stream()
-							.map(option ->
-								QuestionOptionsResponseDTO.builder()
-									.optionId(option.getOptionId())
-									.optionLabel(option.getOptionLabel())
-									.optionText(option.getOptionText())
-									.build())
-							.toList())
-				.build()
-		).toList();
+				.options(mapQuestionOptions.get(question.getQuestionId()).stream()
+						.map(questionOption ->
+							QuestionOptionsResponseDTO.builder()
+								.optionId(questionOption.getOptionId())
+								.optionLabel(questionOption.getOptionLabel())
+								.optionText(questionOption.getOptionText())
+								.build())
+						.toList())
+				.build())
+		.toList();
 		return page;
 	}
 
 	public List<QuestionResponseDTO> findBySubject(String subject, Pageable pageable) {
 		Page<Question> pageQuestion = questionRepository.findBySubject(subject, pageable);
+		List<Question> questionsOnPage = pageQuestion.getContent();
+		List<QuestionOption> allOptionsOnPage = questionOptionRepository.findByQuestionIn(questionsOnPage);
+		Map<Long, List<QuestionOption>> mapQuestionOptions = allOptionsOnPage.stream()
+				.collect(Collectors.groupingBy(option -> option.getQuestion().getQuestionId()));
 		List<QuestionResponseDTO> page = pageQuestion.map(question ->
 			QuestionResponseDTO.builder()
 				.questionId(question.getQuestionId())
@@ -125,17 +134,16 @@ public class QuestionAdminServiceImpl implements QuestionAdminService {
 				.correctOptionLabel(question.getCorrectOption().getOptionLabel())
 				.createdAt(question.getCreatedAt())
 				.updatedAt(question.getUpdatedAt())
-				.options(
-						questionOptionRepository.findByQuestion_QuestionId(question.getQuestionId()).stream()
-							.map(option ->
-								QuestionOptionsResponseDTO.builder()
-									.optionId(option.getOptionId())
-									.optionLabel(option.getOptionLabel())
-									.optionText(option.getOptionText())
-									.build())
-							.toList())
-				.build()
-		).toList();
+				.options(mapQuestionOptions.get(question.getQuestionId()).stream()
+						.map(questionOption ->
+							QuestionOptionsResponseDTO.builder()
+								.optionId(questionOption.getOptionId())
+								.optionLabel(questionOption.getOptionLabel())
+								.optionText(questionOption.getOptionText())
+								.build())
+						.toList())
+				.build())
+		.toList();
 		return page;
 	}
 
