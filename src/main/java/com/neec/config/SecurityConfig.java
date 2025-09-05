@@ -19,12 +19,16 @@ public class SecurityConfig {
 	final static private String[] END_POINTS_ADMIN = {
 		"/api/v1/admin/**"
 	};
+	final static private String[] END_POINTS_APPLICANT = {
+		"/api/v1/sessions/**"
+	};
 
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 		return httpSecurity.cors(Customizer.withDefaults())
 			.csrf(csrf -> csrf.disable())
 			.authorizeHttpRequests(auth -> auth.requestMatchers(END_POINTS_ADMIN).hasAuthority("ADMIN")
+					.requestMatchers(END_POINTS_APPLICANT).hasAuthority("APPLICANT")
 					.anyRequest().authenticated())
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
