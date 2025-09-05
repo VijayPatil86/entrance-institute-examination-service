@@ -1,9 +1,13 @@
 package com.neec.controller;
 
+import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,5 +41,21 @@ public class ExamSessionController {
 			throw new IllegalArgumentException("Invalid user ID format in JWT subject.");
 		}
 		return ResponseEntity.status(HttpStatus.CREATED).body(examSessionService.createExamSession(userId));
+	}
+
+	@GetMapping("/me/active")
+	public ResponseEntity<?> getActiveSession(@AuthenticationPrincipal CustomPrincipal customPrincipal){
+		Long userId;
+		try {
+			userId = Long.valueOf(customPrincipal.getSubject());
+		} catch(NumberFormatException ex) {
+			throw new IllegalArgumentException("Invalid user ID format in JWT subject.");
+		}
+		Optional<ExamSessionDTO> optActiveSession =
+				examSessionService.findActiveSessionByUserId(userId);
+		if(optActiveSession.isPresent()) {
+			return ResponseEntity.ok(optActiveSession.get());
+		}
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 	}
 }

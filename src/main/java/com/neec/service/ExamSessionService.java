@@ -32,7 +32,7 @@ public interface ExamSessionService {
      * @param userId The ID of the user.
      * @return An Optional containing the active ExamSession if one exists, otherwise an empty Optional.
      */
-    //Optional<ExamSession> findActiveSessionByUserId(Long userId);
+    Optional<ExamSessionDTO> findActiveSessionByUserId(Long userId);
 
     /**
      * Marks an exam session as completed.
