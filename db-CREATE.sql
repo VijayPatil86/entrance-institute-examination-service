@@ -16,3 +16,10 @@ create table QUESTION_OPTIONS(
 	constraint fk_QUESTION_ID foreign key (QUESTION_ID) references QUESTIONS(QUESTION_ID)
 );
 
+create table EXAM_SESSIONS(
+	SESSION_ID bigserial primary key,
+	USER_ID bigint not null unique,
+	START_TIME timestamp with time zone default current_timestamp not null,
+	END_TIME timestamp with time zone,
+	STATUS varchar(20) not null check(STATUS in ('IN_PROGRESS', 'COMPLETED'))
+);
