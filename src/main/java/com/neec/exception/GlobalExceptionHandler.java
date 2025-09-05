@@ -54,4 +54,18 @@ public class GlobalExceptionHandler {
 		errorMessage.put("error", "Unexpected error: " + ex.getMessage());
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMessage);
 	}
+
+	@ExceptionHandler(exception = {SessionConflictException.class})
+	public ResponseEntity<ObjectNode> handleSessionConflictException(SessionConflictException ex) {
+		ObjectNode errorMessage = objectMapper.createObjectNode();
+		errorMessage.put("error", ex.getMessage());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+	}
+
+	@ExceptionHandler(exception = {IllegalArgumentException.class})
+	public ResponseEntity<ObjectNode> handleIllegalArgumentException(IllegalArgumentException ex) {
+		ObjectNode errorMessage = objectMapper.createObjectNode();
+		errorMessage.put("error", ex.getMessage());
+		return ResponseEntity.badRequest().body(errorMessage);
+	}
 }
