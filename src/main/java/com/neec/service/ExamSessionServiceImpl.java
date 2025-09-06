@@ -1,8 +1,10 @@
 package com.neec.service;
 
+import java.time.Instant;
+import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.function.Function;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +47,26 @@ public class ExamSessionServiceImpl implements ExamSessionService {
 	public Optional<ExamSessionDTO> findActiveSessionByUserId(Long userId) {
 		return examSessionRepository.findByUserIdAndExamStatus(userId, ExamStatus.IN_PROGRESS)
 				.map(examSession_To_ExamSessionDTO_Mapper);
+	}
+
+	@Transactional
+	@Override
+	public ExamSessionDTO completeSession(Long sessionId, Long userId) {
+		ExamSession existingExamSession = examSessionRepository.findById(sessionId)
+				.orElseThrow(() -> new NoSuchElementException("ExamSession with ID " + sessionId + " not found."));
+
+		// AUTHORIZATION CHECK
+		if(!existingExamSession.getUserId().equals(userId))
+			throw new AccessDeniedException("User does not have permission to complete this session.");
+
+		if(existingExamSession.getExamStatus().equals(ExamStatus.COMPLETED))
+			throw new SessionConflictException("Exam session is already completed.");
+
+		existingExamSession.setExamStatus(ExamStatus.COMPLETED);
+		existingExamSession.setEndTime(Instant.now());
+		// The changes will be saved automatically by JPA's dirty checking
+	    // when the transactional method completes. No explicit save() is needed.
+		return examSession_To_ExamSessionDTO_Mapper.apply(existingExamSession);
 	}
 
 	private ExamSessionDTO toExamSessionDTO(ExamSession examSession) {

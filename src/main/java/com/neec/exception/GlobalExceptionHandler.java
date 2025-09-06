@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -67,5 +68,14 @@ public class GlobalExceptionHandler {
 		ObjectNode errorMessage = objectMapper.createObjectNode();
 		errorMessage.put("error", ex.getMessage());
 		return ResponseEntity.badRequest().body(errorMessage);
+	}
+
+	@ExceptionHandler(exception = {AccessDeniedException.class})
+	public ResponseEntity<ObjectNode> handleAccessDeniedException(AccessDeniedException ex) {
+		ObjectNode errorMessage = objectMapper.createObjectNode();
+		// Spring Security or other libraries might update this exception with more technical, internal messages.
+		// CRITICAL: Use a generic, safe message instead of reflecting the internal exception message.
+		errorMessage.put("error", "Forbidden: You do not have the necessary permissions to access this resource.");
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorMessage);
 	}
 }

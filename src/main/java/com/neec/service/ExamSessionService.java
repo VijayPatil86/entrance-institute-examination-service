@@ -39,8 +39,9 @@ public interface ExamSessionService {
      * This involves setting the session's status to COMPLETED and recording the end time.
      *
      * @param sessionId The ID of the session to complete.
+     * @param userId The ID of the user.
      */
-    //void completeSession(Long sessionId);
+    ExamSessionDTO completeSession(Long sessionId, Long userId);
 
     /**
      * (For Admin) Retrieves a single exam session by its ID, regardless of its status.
