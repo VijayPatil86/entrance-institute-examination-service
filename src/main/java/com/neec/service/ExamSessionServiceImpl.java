@@ -49,6 +49,13 @@ public class ExamSessionServiceImpl implements ExamSessionService {
 				.map(examSession_To_ExamSessionDTO_Mapper);
 	}
 
+	@Transactional(readOnly = true)
+	@Override
+	public Optional<ExamSessionDTO> getSessionById(Long sessionId){
+		return examSessionRepository.findById(sessionId)
+			.map(examSession_To_ExamSessionDTO_Mapper);
+	}
+
 	@Transactional
 	@Override
 	public ExamSessionDTO completeSession(Long sessionId, Long userId) {

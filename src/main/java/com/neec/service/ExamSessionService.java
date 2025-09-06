@@ -47,9 +47,9 @@ public interface ExamSessionService {
      * (For Admin) Retrieves a single exam session by its ID, regardless of its status.
      *
      * @param sessionId The ID of the session.
-     * @return An Optional containing the ExamSession.
+     * @return An Optional containing the active ExamSession if one exists, otherwise an empty Optional.
      */
-    //Optional<ExamSession> getSessionById(Long sessionId);
+    Optional<ExamSessionDTO> getSessionById(Long sessionId);
 
     /**
      * (For Admin) Retrieves a paginated list of all exam sessions, optionally filtered by status.
