@@ -2,6 +2,8 @@ package com.neec.repository;
 
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.neec.entity.ExamSession;
@@ -17,4 +19,6 @@ public interface ExamSessionRepository extends JpaRepository<ExamSession, Long> 
      * @return An Optional containing the ExamSession if found.
      */
 	Optional<ExamSession> findByUserIdAndExamStatus(Long userId, ExamStatus examStatus);
+
+	Page<ExamSession> findAllByExamStatus(ExamStatus examStatus, Pageable pageable);
 }

@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,6 +76,24 @@ public class ExamSessionServiceImpl implements ExamSessionService {
 		// The changes will be saved automatically by JPA's dirty checking
 	    // when the transactional method completes. No explicit save() is needed.
 		return examSession_To_ExamSessionDTO_Mapper.apply(existingExamSession);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public Page<ExamSessionDTO> getAllSessions(Optional<ExamStatus> optExamStatus, Pageable pageable) {
+		Page<ExamSession> pageExamSession = null;
+		if(optExamStatus.isPresent()) {
+			// Case 1: A status filter was provided by the client.
+			pageExamSession = examSessionRepository.findAllByExamStatus(optExamStatus.get(), pageable);
+		} else {
+			// Case 2: No filter was provided, so get all sessions.
+            // The findAll(Pageable) method is provided by JpaRepository.
+			pageExamSession = examSessionRepository.findAll(pageable);
+		}
+		// Map the resulting Page<ExamSession> to a Page<ExamSessionDTO>.
+		// This works correctly and efficiently even if the page is empty, Page.hasContent() = false
+		Page<ExamSessionDTO> pageExamSessionDTO = pageExamSession.map(examSession_To_ExamSessionDTO_Mapper);
+		return pageExamSessionDTO;
 	}
 
 	private ExamSessionDTO toExamSessionDTO(ExamSession examSession) {

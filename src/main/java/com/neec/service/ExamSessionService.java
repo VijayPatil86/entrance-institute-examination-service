@@ -6,7 +6,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.neec.dto.ExamSessionDTO;
-import com.neec.entity.ExamSession;
 import com.neec.enums.ExamStatus;
 
 /**
@@ -58,5 +57,5 @@ public interface ExamSessionService {
      * @param pageable Pagination and sorting information.
      * @return A Page of ExamSession entities.
      */
-    //Page<ExamSession> getAllSessions(Optional<ExamStatus> status, Pageable pageable);
+    Page<ExamSessionDTO> getAllSessions(Optional<ExamStatus> status, Pageable pageable);
 }
