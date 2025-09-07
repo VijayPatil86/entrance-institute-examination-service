@@ -23,3 +23,17 @@ create table EXAM_SESSIONS(
 	END_TIME timestamp with time zone,
 	STATUS varchar(20) not null check(STATUS in ('IN_PROGRESS', 'COMPLETED'))
 );
+
+create table STUDENT_ANSWERS(
+	ANSWER_ID bigserial primary key,
+	SESSION_ID bigint not null,
+	QUESTION_ID bigint not null,
+	SELECTED_OPTION_ID bigint not null,
+	IS_ANSWER_CORRECT boolean,
+	SUBMITTED_AT timestamp with time zone not null default current_timestamp,
+	constraint fk_SESSION_ID foreign key (SESSION_ID) references EXAM_SESSIONS(SESSION_ID),
+	constraint fk_QUESTION_ID foreign key (QUESTION_ID) references QUESTIONS(QUESTION_ID),
+	constraint fk_SELECTED_OPTION_ID foreign key (SELECTED_OPTION_ID) references QUESTION_OPTIONS(OPTION_ID),
+	-- a Question must be answered within given session only, same Question in multiple sessions not allowed
+	constraint uk_QUESTION_SESSION unique(QUESTION_ID, SESSION_ID)
+);
