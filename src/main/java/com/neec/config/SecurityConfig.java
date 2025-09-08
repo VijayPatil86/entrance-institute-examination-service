@@ -20,7 +20,8 @@ public class SecurityConfig {
 		"/api/v1/admin/**"
 	};
 	final static private String[] END_POINTS_APPLICANT = {
-		"/api/v1/sessions/**"
+		"/api/v1/sessions/**",
+		"/api/v1/exams"
 	};
 
 	@Bean
