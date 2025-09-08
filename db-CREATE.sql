@@ -37,3 +37,36 @@ create table STUDENT_ANSWERS(
 	-- a Question must be answered within given session only, same Question in multiple sessions not allowed
 	constraint uk_QUESTION_SESSION unique(QUESTION_ID, SESSION_ID)
 );
+
+-- This table stores the specific list of questions assigned to a student for their exam session.
+-- It ensures that every student gets a consistent set of questions, even if they disconnect and reconnect.
+create table SESSION_QUESTIONS(
+	SESSION_QUESTION_ID bigserial primary key,
+	SESSION_ID bigint not null, -- mapped to STUDENT_ID in table EXAM_SESSIONS
+	QUESTION_ID bigint not null,
+	SEQUENCE_NUMBER int not null, -- The order in which the question appears in the exam (0, 1, 2, ...)
+	constraint fk_SESSION_ID foreign key (SESSION_ID) references EXAM_SESSIONS(SESSION_ID),
+	constraint fk_QUESTION_ID foreign key(QUESTION_ID) references QUESTIONS(QUESTION_ID),
+	constraint unique_SESSION_ID_QUESTION_ID unique (SESSION_ID, QUESTION_ID), -- A question can only appear once per session
+	constraint unique_SESSION_ID_SEQUENCE_NUMBER unique (SESSION_ID, SEQUENCE_NUMBER) -- Each question must have a unique order in the session
+);
+
+create table EXAM_RESULTS(
+	RESULT_ID bigserial primary key,
+	SESSION_ID bigint not null,		-- refers to specific session that generated the result
+	USER_ID bigint not null,		-- for quick lookups
+	SCORE int not null,
+	TOTAL_QUESTIONS int not null,
+	CORRECT_ANSWERS int not null,
+	INCORRECT_ANSWERS int not null,
+	EXAM_RANK int, 	-- nullable as it may be calculated in a separate step after initial grading,
+	RESULT_PUBLISH_DATE timestamp with time zone,	-- nullable as results may be held until an official announcement date
+	CREATED_AT timestamp with time zone not null default current_timestamp,
+	UPDATED_AT timestamp with time zone not null default current_timestamp,
+	constraint unique_SESSION_ID unique (SESSION_ID),
+	constraint fk_SESSION_ID foreign key (SESSION_ID) references EXAM_SESSIONS(SESSION_ID)
+);
+
+-- Optional: add an index on user_id for fast lookups of a user's result.
+create index idx_EXAM_RESULTS_USER_ID on EXAM_RESULTS(USER_ID);
+
