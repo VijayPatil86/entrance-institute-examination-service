@@ -1,5 +1,6 @@
 package com.neec.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -31,15 +32,23 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 	int deactivateBySubject(@Param("subject") String subject);
 
 	@Modifying(clearAutomatically = true)
-	@Query(value = "UPDATE Questions SET is_active = true WHERE question_id = :questionId", nativeQuery = true)
+	@Query(value = "UPDATE Question SET is_active = true WHERE question_id = :questionId", nativeQuery = true)
 	int restoreQuestionById(Long questionId);
 
 	@Modifying(clearAutomatically = true)
-	@Query(value = "UPDATE Questions SET is_active = true WHERE subject = :subject", nativeQuery = true)
+	@Query(value = "UPDATE Question SET is_active = true WHERE subject = :subject", nativeQuery = true)
 	int restoreQuestionsBySubject(@Param("subject") String subject);
 
 	@EntityGraph(attributePaths = {"correctOption"})
 	Page<Question> findAllBySubject(String subject, Pageable pageable);
+
+	/**
+     * Efficiently retrieves only the IDs of all active questions.
+     * This is much faster than loading full entities when we only need the IDs for shuffling.
+     * @return A list of all active question IDs.
+     */
+	@Query(value = "SELECT q.questionId FROM Question q")
+	List<Long> findAllQuestionIds();
 }
 /*
  * @EntityGraph: resolves N+1 problem

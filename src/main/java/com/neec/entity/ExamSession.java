@@ -1,18 +1,23 @@
 package com.neec.entity;
 
 import java.time.Instant;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.neec.enums.ExamStatus;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -45,4 +50,9 @@ public class ExamSession {
 	@Enumerated(EnumType.STRING)
 	@Builder.Default
 	ExamStatus examStatus = ExamStatus.IN_PROGRESS;
+
+	// ADDED: A session now has a list of assigned questions.
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "examSession", cascade = CascadeType.ALL)
+	@OrderBy(value = "questionSequenceNumber ASC")
+	List<SessionQuestion> questionPlayList;
 }

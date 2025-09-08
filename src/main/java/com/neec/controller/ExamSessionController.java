@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.neec.dto.CustomPrincipal;
 import com.neec.dto.ExamSessionDTO;
+import com.neec.function.impl.ExamSession_To_ExamSessionDTO_Mapper;
 import com.neec.service.ExamSessionService;
 
 @RestController
@@ -21,9 +22,12 @@ import com.neec.service.ExamSessionService;
 @RequestMapping("/api/v1/sessions")
 public class ExamSessionController {
 	final private ExamSessionService examSessionService;
+	final private ExamSession_To_ExamSessionDTO_Mapper examSession_To_ExamSessionDTO_Mapper;
 
-	public ExamSessionController(ExamSessionService examSessionService) {
+	public ExamSessionController(ExamSessionService examSessionService, 
+			ExamSession_To_ExamSessionDTO_Mapper examSession_To_ExamSessionDTO_Mapper) {
 		this.examSessionService = examSessionService;
+		this.examSession_To_ExamSessionDTO_Mapper = examSession_To_ExamSessionDTO_Mapper;
 	}
 
 	/**
@@ -40,7 +44,10 @@ public class ExamSessionController {
 			// This would result in a 400 Bad Request if the JWT subject is not a valid number.
 			throw new IllegalArgumentException("Invalid user ID format in JWT subject.");
 		}
-		return ResponseEntity.status(HttpStatus.CREATED).body(examSessionService.createExamSession(userId));
+		return ResponseEntity.status(HttpStatus.CREATED)
+				.body(
+						examSession_To_ExamSessionDTO_Mapper.apply(examSessionService.createExamSession(userId))
+				);
 	}
 
 	@GetMapping("/me/active")

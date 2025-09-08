@@ -78,4 +78,18 @@ public class GlobalExceptionHandler {
 		errorMessage.put("error", "Forbidden: You do not have the necessary permissions to access this resource.");
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorMessage);
 	}
+
+	@ExceptionHandler(exception = {AnswerConflictException.class})
+	public ResponseEntity<ObjectNode> handleAnswerConflictException(AnswerConflictException ex) {
+		ObjectNode errorMessage = objectMapper.createObjectNode();
+		errorMessage.put("error", ex.getMessage());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+	}
+
+	@ExceptionHandler(exception = {ResultsNotPublishedException.class})
+	public ResponseEntity<ObjectNode> handleResultsNotPublishedException(ResultsNotPublishedException ex) {
+		ObjectNode errorMessage = objectMapper.createObjectNode();
+		errorMessage.put("error", ex.getMessage());
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorMessage);
+	}
 }

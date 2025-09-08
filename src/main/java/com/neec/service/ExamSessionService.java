@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.neec.dto.ExamSessionDTO;
+import com.neec.entity.ExamSession;
 import com.neec.enums.ExamStatus;
 
 /**
@@ -22,7 +23,7 @@ public interface ExamSessionService {
      * @return The newly created ExamSession DTO.
      * @throws com.neec.exception.SessionConflictException if the user already has an active session (results in HTTP 409 Conflict).
      */
-	ExamSessionDTO createExamSession(Long userId);
+	ExamSession createExamSession(Long userId);
 
 	/**
      * Retrieves the active (IN_PROGRESS) exam session for a specific user.

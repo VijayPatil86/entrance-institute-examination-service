@@ -4,12 +4,14 @@ import java.time.Instant;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.neec.config.RabbitMQConfig;
 import com.neec.dto.ExamSessionDTO;
 import com.neec.entity.ExamSession;
 import com.neec.enums.ExamStatus;
@@ -21,17 +23,20 @@ import com.neec.repository.ExamSessionRepository;
 @Transactional
 public class ExamSessionServiceImpl implements ExamSessionService {
 	final private ExamSessionRepository examSessionRepository;
+	final private RabbitTemplate rabbitTemplate;
 	final private ExamSession_To_ExamSessionDTO_Mapper examSession_To_ExamSessionDTO_Mapper;
 
 	public ExamSessionServiceImpl(ExamSessionRepository examSessionRepository,
-			ExamSession_To_ExamSessionDTO_Mapper examSession_To_ExamSessionDTO_Mapper) {
+			ExamSession_To_ExamSessionDTO_Mapper examSession_To_ExamSessionDTO_Mapper,
+			RabbitTemplate rabbitTemplate) {
 		this.examSessionRepository = examSessionRepository;
 		this.examSession_To_ExamSessionDTO_Mapper = examSession_To_ExamSessionDTO_Mapper;
+		this.rabbitTemplate = rabbitTemplate;
 	}
 
 	@Transactional
 	@Override
-	public ExamSessionDTO createExamSession(Long userId) {
+	public ExamSession createExamSession(Long userId) {
 		Optional<ExamSession> optExistingExamSession =
 				examSessionRepository.findByUserIdAndExamStatus(userId, ExamStatus.IN_PROGRESS);
 		if(optExistingExamSession.isPresent())
@@ -40,8 +45,7 @@ public class ExamSessionServiceImpl implements ExamSessionService {
 				.userId(userId)
 				// The status and startTime are set by default in the entity itself.
 				.build();
-		ExamSession savedExamSession = examSessionRepository.save(newExamSession);
-		return toExamSessionDTO(savedExamSession);
+		return examSessionRepository.save(newExamSession);
 	}
 
 	@Transactional(readOnly = true)
@@ -75,6 +79,9 @@ public class ExamSessionServiceImpl implements ExamSessionService {
 		existingExamSession.setEndTime(Instant.now());
 		// The changes will be saved automatically by JPA's dirty checking
 	    // when the transactional method completes. No explicit save() is needed.
+		// PUBLISH MESSAGE: Send the session ID to RabbitMQ for asynchronous processing.
+		String message = String.valueOf(sessionId);
+		rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY, message);
 		return examSession_To_ExamSessionDTO_Mapper.apply(existingExamSession);
 	}
 
@@ -94,15 +101,5 @@ public class ExamSessionServiceImpl implements ExamSessionService {
 		// This works correctly and efficiently even if the page is empty, Page.hasContent() = false
 		Page<ExamSessionDTO> pageExamSessionDTO = pageExamSession.map(examSession_To_ExamSessionDTO_Mapper);
 		return pageExamSessionDTO;
-	}
-
-	private ExamSessionDTO toExamSessionDTO(ExamSession examSession) {
-		return ExamSessionDTO.builder()
-				.sessionId(examSession.getSessionId())
-				.userId(examSession.getUserId())
-				.startTime(examSession.getStartTime())
-				.endTime(examSession.getEndTime())
-				.examStatus(examSession.getExamStatus())
-				.build();
 	}
 }
